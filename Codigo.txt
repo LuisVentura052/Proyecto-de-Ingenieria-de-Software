@@ -1,20 +1,37 @@
 from customtkinter import *
 from CTkMessagebox import *
 
+
 ventana = CTk()
 ventana.geometry("500x300")
 ventana.title("PdFindDir")
 
 def read_pdfinder(vpdfname, vdictname):
     import re
+    import os
     from pdfminer.high_level import extract_text
     txtlinea =""
     valclean=[]
     var_final_file=[]
+    
+    folder_path = r"D:\jorge\Desktop"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    
 
     pdftext = extract_text(vpdfname)
-    archivo = open(vdictname)
+    archivo = extract_text(vdictname)
+    if archivo:
+        archivo = archivo.upper()
+    if pdftext:
+        pdftext = pdftext.upper()
     strippdf = pdftext.split('\n')
+    stripdic = archivo.strip()
+    dic = stripdic.splitlines()
+
+    lineas_sin_vacios = [linea for linea in dic if len(linea.strip()) > 0]
+
+    lineas_sin_vacios = [linea.rstrip() for linea in dic if len(linea.strip()) > 0]
 
     for linea in strippdf:
         if linea != "":
@@ -32,7 +49,7 @@ def read_pdfinder(vpdfname, vdictname):
              valclean.append(re.sub(r"[^a-zA-Z0-9ÑñÁáÉéÍíÓóÚú]","",valor))
              txtlinea = txtlinea + valor + " "
 
-    for linea_arch in archivo:
+    for linea_arch in lineas_sin_vacios:
         linea_arch = linea_arch.strip()
         if linea_arch.count(" ") >= 1:
             if txtlinea.count(linea_arch)>=1:
@@ -45,9 +62,9 @@ def read_pdfinder(vpdfname, vdictname):
             else:
                 if linea_arch==valorf:
                     var_final_file.append(linea_arch)
-    final_file = open('C:/Users/jorge/Downloads/Coincidencias.txt', 'w')
+    final_file = open(os.path.join(folder_path, "resultados.txt"), 'w')
     final_file.writelines("\n".join(var_final_file).strip())
-                    
+    final_file.close()
 
 def msgerror():
     CTkMessagebox(title= "Error", message="Formato no valido", icon="cancel")
@@ -64,33 +81,31 @@ def buscarpdf():
         msgerror()
         print (v_file_entrada_pdf)
         
-def buscartxt():
-    global v_file_entrada_txt
-    v_file_entrada_txt = filedialog.askopenfilename()
-    if (v_file_entrada_txt[v_file_entrada_txt.find(".txt"):len(v_file_entrada_txt)] == ".txt") or (v_file_entrada_txt ==""):
-        print (v_file_entrada_txt)
+def buscardic():
+    global v_file_entrada_pdf2
+    v_file_entrada_pdf2 = filedialog.askopenfilename()
+    if (v_file_entrada_pdf2[v_file_entrada_pdf2.find(".pdf"):len(v_file_entrada_pdf2)] == ".pdf") or (v_file_entrada_pdf2 ==""):
+        print (v_file_entrada_pdf2)
     else:
         msgerror()
 
 def execdict():
     try: 
         print(v_file_entrada_pdf)
-        print(v_file_entrada_txt)
+        print(v_file_entrada_pdf2)
     except:
         msgnofile()           
-    if v_file_entrada_pdf=="" or v_file_entrada_txt=="":
+    if v_file_entrada_pdf=="" or v_file_entrada_pdf2=="":
         msgnofile()
     else:
         print(v_file_entrada_pdf)
-        print(v_file_entrada_txt)
-        read_pdfinder(v_file_entrada_pdf, v_file_entrada_txt)
-        
+        print(v_file_entrada_pdf2)
+        read_pdfinder(v_file_entrada_pdf, v_file_entrada_pdf2)
     
-
 btnpdf = CTkButton(master=ventana,text="Selecciona pdf",corner_radius=32, fg_color='#ff00ff', font=('console',35), command=buscarpdf)
 btnpdf.place(relx=0.5,rely=0.5,anchor="center")
 
-btntxt = CTkButton(master=ventana,text="Selecciona txt",corner_radius=32, fg_color='#ff00ff', font=('console',35), command=buscartxt)
+btntxt = CTkButton(master=ventana,text="Selecciona diccionario",corner_radius=32, fg_color='#ff00ff', font=('console',35), command=buscardic)
 btntxt.place(relx=0.5,rely=0.7,anchor="center")
 
 btnexe = CTkButton(master=ventana,text="Ejecutar",corner_radius=32, fg_color='#ff00ff', font=('console',35), command=execdict)
